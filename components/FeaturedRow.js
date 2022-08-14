@@ -1,9 +1,32 @@
 import { View, Text, ScrollView } from "react-native";
-import React from "react";
+import React, { useEffect } from "react";
 import { ArrowRightIcon } from "react-native-heroicons/outline";
 import RestaurantCard from "./RestaurantCard";
+import sanityClient from '../sanity'
 
 const FeaturedRow = ({ title, id, description }) => {
+  const [restaurants, setRestaurants] = useState([])
+
+useEffect(() => {
+  sanityClient.fetch(`
+  *[_type == 'featured' && _id == $id] {
+    ...,
+    restaurants[]->{
+      ...,
+      dishes[]->,
+      type-> {
+        name
+      }
+    },
+  }[0]
+
+  `, 
+  {id}
+  ).then(data => {
+    setRestaurants(data?.restaurants)
+  })
+},[])
+
   return (
     <View>
       <View className="mt-4 flex-row items-center justify-between px-4">
